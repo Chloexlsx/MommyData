@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Planning to Get Pregnant - MommyData{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <a href="/" class="text-secondary hover:text-black font-hand mb-4 inline-block">← Back to Home</a>
+        <h1 class="text-3xl sm:text-4xl font-hand font-bold text-black mb-4">
+            I'm Planning to Get Pregnant
+        </h1>
+        <p class="text-secondary">
+            Please fill in the following information, and we'll provide relevant data comparisons
+        </p>
+    </div>
+
+    <!-- Guided Questions Form -->
+    <div class="bg-white border-2 border-black rounded-lg p-6 sm:p-8 mb-8">
+        <form id="preparingForm" class="space-y-6">
+            <div>
+                <label for="age" class="block text-sm font-medium text-black mb-2 font-hand">
+                    Age Group
+                </label>
+                <select id="age" name="age" class="w-full px-4 py-3 border-2 border-black rounded-lg focus:ring-2 focus:ring-black font-sans">
+                    <option value="">Please select</option>
+                    <option value="15-19">15-19 years</option>
+                    <option value="20-24">20-24 years</option>
+                    <option value="25-29">25-29 years</option>
+                    <option value="30-34">30-34 years</option>
+                    <option value="35-39">35-39 years</option>
+                    <option value="40+">40+ years</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-black mb-2 font-hand">
+                    Smoking Status
+                </label>
+                <div class="flex space-x-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="smoking" value="yes" class="mr-2">
+                        <span class="font-sans">Yes</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="smoking" value="no" class="mr-2">
+                        <span class="font-sans">No</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label for="bmi" class="block text-sm font-medium text-black mb-2 font-hand">
+                    BMI Range
+                </label>
+                <select id="bmi" name="bmi" class="w-full px-4 py-3 border-2 border-black rounded-lg focus:ring-2 focus:ring-black font-sans">
+                    <option value="">Please select</option>
+                    <option value="underweight">Underweight (<18.5)</option>
+                    <option value="normal">Normal (18.5-24.9)</option>
+                    <option value="overweight">Overweight (25-29.9)</option>
+                    <option value="obese">Obese (≥30)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-black mb-2 font-hand">
+                    Pre-pregnancy Diabetes
+                </label>
+                <div class="flex space-x-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="diabetes" value="true" class="mr-2">
+                        <span class="font-sans">Yes</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="diabetes" value="false" class="mr-2">
+                        <span class="font-sans">No</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-black mb-2 font-hand">
+                    Pre-pregnancy Hypertension
+                </label>
+                <div class="flex space-x-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="hypertension" value="true" class="mr-2">
+                        <span class="font-sans">Yes</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="hypertension" value="false" class="mr-2">
+                        <span class="font-sans">No</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label for="lhd" class="block text-sm font-medium text-black mb-2 font-hand">
+                    Region (Optional)
+                </label>
+                <input type="text" id="lhd" name="lhd" placeholder="Enter LHD name" class="w-full px-4 py-3 border-2 border-black rounded-lg focus:ring-2 focus:ring-black font-sans">
+            </div>
+
+            <button type="submit" class="w-full bg-black text-white px-6 py-3 rounded-lg font-hand font-bold hover:opacity-90 transition-opacity">
+                View Data Comparison
+            </button>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="hidden">
+        <h2 class="text-2xl font-hand font-bold text-black mb-6">Data Comparison Results</h2>
+        
+        <!-- Filter Panel -->
+        <div class="bg-white border-2 border-black rounded-lg p-4 mb-6">
+            <h3 class="font-hand font-bold text-black mb-4">Adjust Filters</h3>
+            <div id="filterPanel" class="space-y-4">
+                <!-- Filters will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Results Cards -->
+        <div id="resultsCards" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Cards will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="hidden text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        <p class="mt-2 text-secondary">Loading...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('preparingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const params = new URLSearchParams();
+        
+        for (const [key, value] of formData.entries()) {
+            if (value) {
+                params.append(key === 'age' ? 'age_group' : key, value);
+            }
+        }
+        
+        // Show loading
+        document.getElementById('loading').classList.remove('hidden');
+        document.getElementById('results').classList.add('hidden');
+        
+        try {
+            const response = await fetch(`/api/v1/scenario/preparing?${params.toString()}`);
+            const data = await response.json();
+            
+            // Hide loading
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            // Display results
+            displayResults(data);
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('loading').classList.add('hidden');
+            alert('Error loading data. Please try again later.');
+        }
+    });
+    
+    function displayResults(data) {
+        const cardsContainer = document.getElementById('resultsCards');
+        cardsContainer.innerHTML = '';
+        
+        // Create cards for each metric
+        if (data.mothers) {
+            const card = createComparisonCard(
+                'Mothers Statistics',
+                data.mothers.avg_percentage,
+                data.overall_average?.avg_percentage || 0,
+                data.mothers.total,
+                data.overall_average?.total || 0
+            );
+            cardsContainer.appendChild(card);
+        }
+        
+        if (data.complications && data.complications.length > 0) {
+            data.complications.forEach(comp => {
+                const card = createComplicationCard(comp);
+                cardsContainer.appendChild(card);
+            });
+        }
+    }
+    
+    function createComparisonCard(title, userValue, avgValue, userTotal, avgTotal) {
+        const card = document.createElement('div');
+        card.className = 'bg-white border-2 border-black rounded-lg p-6';
+        
+        const diff = userValue - avgValue;
+        const diffPercent = avgValue > 0 ? ((diff / avgValue) * 100).toFixed(1) : 0;
+        
+        card.innerHTML = `
+            <h3 class="text-xl font-hand font-bold text-black mb-4">${title}</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="font-sans text-secondary">Your Conditions</span>
+                    <span class="font-sans font-bold text-black">${userValue.toFixed(1)}%</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-sans text-secondary">Overall Average</span>
+                    <span class="font-sans font-bold text-black">${avgValue.toFixed(1)}%</span>
+                </div>
+                <div class="border-t-2 border-black pt-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-sans text-secondary">Difference</span>
+                        <span class="font-sans font-bold ${diff >= 0 ? 'text-black' : 'text-red-600'}">
+                            ${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% (${diffPercent >= 0 ? '+' : ''}${diffPercent}%)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    function createComplicationCard(comp) {
+        const card = document.createElement('div');
+        card.className = 'bg-white border-2 border-black rounded-lg p-6';
+        
+        card.innerHTML = `
+            <h3 class="text-xl font-hand font-bold text-black mb-4">${comp.type || 'Complication'}</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="font-sans text-secondary">Incidence Rate</span>
+                    <span class="font-sans font-bold text-black">${comp.percentage.toFixed(1)}%</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="font-sans text-secondary">Cases</span>
+                    <span class="font-sans text-black">${comp.count}</span>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+</script>
+{% endblock %}
+
