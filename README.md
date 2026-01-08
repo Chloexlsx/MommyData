@@ -1,76 +1,74 @@
-# MommyData - NSW Mothers and Babies Data Explorer
+# MommyData - Maternal Health Data Explorer
 
-一個針對懷孕或計劃懷孕人士的互動式資料探索網站，使用 NSW Health Mothers and Babies 2023 開放數據。
+An interactive data exploration website for pregnant or planning-to-be-pregnant individuals, using Australian Institute of Health and Welfare (AIHW) National Perinatal Data Collection data (2018-2023).
 
-## 功能特色
+## Features
 
-### 三個主要場景
+### Interactive Health Factor Analysis
 
-1. **我在準備懷孕**
-   - 根據年齡、BMI、吸菸、糖尿病、高血壓等條件
-   - 提供懷孕結果統計與風險評估
+- **Diabetes & Hypertension Trends**
+  - Select your age and compare with historical data
+  - View trends over years (2018-2023) for different age groups
+  - Multiple sub-group selection (Pre-existing, Gestational, etc.)
+  - Visual comparison with your age group highlighted
 
-2. **我已懷孕**
-   - 根據產檢開始週數、年齡等條件
-   - 提供引產/剖腹率、早產/低體重、NICU 等統計
+## Technical Stack
 
-3. **我在選醫院**
-   - 根據地區選擇
-   - 比較不同醫院的分娩方式、疼痛緩解、住院天數、哺乳率等
+- **Backend**: FastAPI + SQLModel + SQLite
+- **Frontend**: Jinja2 Templates + TailwindCSS + Chart.js
+- **Design System**: Vibecamp (black & white style, Kalam/Inter fonts)
 
-## 技術架構
+## Installation & Setup
 
-- **後端**: FastAPI + SQLModel + SQLite
-- **前端**: Jinja2 Templates + TailwindCSS + Vanilla JavaScript
-- **設計系統**: Vibecamp (黑白風格，Kalam/Inter 字體)
-
-## 安裝與執行
-
-### 1. 安裝依賴
+### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 匯入數據
+### 2. Import Data
 
 ```bash
 python scripts/import_data.py
 ```
 
-### 3. 啟動應用程式
+This will import the diabetes and hypertension data from the CSV file in the `data/` directory.
+
+### 3. Run the Application
 
 ```bash
 uvicorn main:app --reload
 ```
 
-應用程式將在 http://localhost:8000 啟動
+The application will be available at http://localhost:8000
 
-## 專案結構
+## Project Structure
 
 ```
 MommyData/
 ├── app/
-│   ├── models/          # 資料庫模型
-│   ├── controllers/     # 業務邏輯層
-│   ├── routes/          # API 路由
-│   ├── templates/       # Jinja2 模板
-│   ├── static/          # 靜態資源
-│   └── utils/           # 工具函數
+│   ├── models/          # Database models
+│   ├── controllers/     # Business logic layer
+│   ├── routes/          # API and web routes
+│   ├── templates/       # Jinja2 templates
+│   ├── static/          # Static resources
+│   └── utils/           # Utility functions
 ├── scripts/
-│   └── import_data.py   # 數據匯入腳本
-├── data/                 # 原始數據檔案
-└── main.py             # FastAPI 應用入口
+│   └── import_data.py   # Data import script
+├── data/                 # Raw data files
+└── main.py             # FastAPI application entry point
 ```
 
-## API 端點
+## API Endpoints
 
-- `GET /api/v1/scenario/preparing` - 準備懷孕場景數據
-- `GET /api/v1/scenario/pregnant` - 已懷孕場景數據
-- `GET /api/v1/scenario/hospital` - 選醫院場景數據
-- `GET /api/v1/compare` - 個人化對比數據
+- `GET /api/v1/factor/{factor_name}` - Get factor data with sub-group disaggregation (diabetes/hypertension)
+  - Query parameters: `age_group`, `start_year`, `end_year`, `sub_group` (multiple)
+- `GET /api/v1/factor/{factor_name}/simple` - Get simplified factor data without sub-group disaggregation
 
-## 授權
+## Data Source
+
+Data from Australian Institute of Health and Welfare (AIHW) National Perinatal Data Collection annual update data visualization (2018-2023).
+
+## License
 
 A Vibecamp Creation
-
